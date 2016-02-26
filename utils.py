@@ -30,7 +30,7 @@ class DataLoader():
     for i in range(100):
 
         sin = np.zeros((1000, 1), dtype=np.float32) 
-        amp = 5 + random.random() * 25
+        amp = 25 # 5 + random.random() * 25
         for j in range(sin.shape[0]):
             sin[j] = amp * math.sin((j) * 2 * np.pi / 100)
         sins.append(sin)

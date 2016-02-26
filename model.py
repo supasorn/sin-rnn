@@ -42,8 +42,10 @@ class Model():
     # [prob 1-20, dim1 mu, dim1 sig, dim2,... ]
 
     with tf.variable_scope('rnnlm'):
-      output_w = tf.get_variable("output_w", [args.rnn_size, NOUT])
-      output_b = tf.get_variable("output_b", [NOUT])
+        output_w = tf.get_variable("output_w", [args.rnn_size, NOUT])
+        output_b = tf.get_variable("output_b", [NOUT])
+
+    self.w = output_w
 
     inputs = tf.split(1, args.seq_length, self.input_data)
     inputs = [tf.squeeze(input_, [1]) for input_ in inputs]
@@ -114,8 +116,8 @@ class Model():
 
     def sample_gaussian_2d(mu, sig):
       x = np.random.multivariate_normal(mu, np.diag(sig) ** 2, 1)
-      #return x[0]
-      return mu
+      return x[0]
+      #return mu
 
     pose = np.array([0], dtype=np.float32)
     prev_x = np.zeros((1, 1, self.dim), dtype=np.float32)
@@ -131,6 +133,9 @@ class Model():
     dwg.add(dwg.rect(insert=(0, 0), size=dims,fill='white'))
     p = "M 0,%f " % (height / 2)
 
+    
+    print sess.run(self.w)
+    exit(0)
     # priming
     for i in range(100):
         feed = {self.input_data: prev_x, self.initial_state:prev_state}
@@ -142,8 +147,8 @@ class Model():
       feed = {self.input_data: prev_x, self.initial_state:prev_state}
 
       [o_pi, o_mu, o_sig, next_state] = sess.run([self.pi, self.mu, self.sig, self.final_state],feed)
-      #idx = get_pi_idx(random.random(), o_pi[0])
-      idx = np.argmax(o_pi[0])
+      idx = get_pi_idx(random.random(), o_pi[0])
+      #idx = np.argmax(o_pi[0])
 
       nxt = sample_gaussian_2d(o_mu[0][idx::self.num_mixture], o_sig[0][idx::self.num_mixture])
       pose += nxt  / self.args.data_scale
