@@ -95,6 +95,9 @@ class Model():
     self.mu = tf.concat(1, self.mu)
     self.sig = tf.concat(1, self.sig)
 
+    self.loss_summary = tf.scalar_summary("loss", self.cost)
+    self.summary = tf.merge_all_summaries()
+
     self.lr = tf.Variable(0.0, trainable=False)
     tvars = tf.trainable_variables()
     grads, _ = tf.clip_by_global_norm(tf.gradients(self.cost, tvars), args.grad_clip)
@@ -115,9 +118,9 @@ class Model():
       return -1
 
     def sample_gaussian_2d(mu, sig):
-      x = np.random.multivariate_normal(mu, np.diag(sig) ** 2, 1)
-      return x[0]
-      #return mu
+      #x = np.random.multivariate_normal(mu, np.diag(sig) ** 2, 1)
+      #return x[0]
+      return mu
 
     pose = np.array([0], dtype=np.float32)
     prev_x = np.zeros((1, 1, self.dim), dtype=np.float32)
@@ -135,7 +138,7 @@ class Model():
 
     
     print sess.run(self.w)
-    exit(0)
+    #exit(0)
     # priming
     for i in range(100):
         feed = {self.input_data: prev_x, self.initial_state:prev_state}
@@ -147,8 +150,8 @@ class Model():
       feed = {self.input_data: prev_x, self.initial_state:prev_state}
 
       [o_pi, o_mu, o_sig, next_state] = sess.run([self.pi, self.mu, self.sig, self.final_state],feed)
-      idx = get_pi_idx(random.random(), o_pi[0])
-      #idx = np.argmax(o_pi[0])
+      #idx = get_pi_idx(random.random(), o_pi[0])
+      idx = np.argmax(o_pi[0])
 
       nxt = sample_gaussian_2d(o_mu[0][idx::self.num_mixture], o_sig[0][idx::self.num_mixture])
       pose += nxt  / self.args.data_scale
